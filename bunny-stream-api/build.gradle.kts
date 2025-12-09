@@ -123,10 +123,10 @@ dependencies {
 }
 
 detekt {
-    config.from("$rootDir/bunny-stream-api/detekt.yml")
+    config.from("${project.projectDir}/detekt.yml")
 }
 
-val specs = File("$rootDir/bunny-stream-api/openapi").walk().map {
+val specs = File("${project.projectDir}/openapi").walk().map {
     Pair(it.name, it.path)
 }.toMap().filter { it.key != "openapi" }
 
