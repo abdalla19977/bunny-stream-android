@@ -24,6 +24,14 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+        getByName("debug") {
+
+        }
+
+        create("staging") {
+
+        }
     }
 
     compileOptions {

@@ -17,4 +17,10 @@ local.properties
 .kotlin/
 app/keystore/*
 
+# Generated OpenAPI files (should only exist in build directory)
+bunny-stream-api/src/main/java/org/openapitools/
+bunny-stream-api/src/main/java/net/bunny/api/api/ManageCollectionsApi.kt
+bunny-stream-api/src/main/java/net/bunny/api/api/ManageVideosApi.kt
+bunny-stream-api/src/main/java/net/bunny/api/api/OEmbedApi.kt
+
 
