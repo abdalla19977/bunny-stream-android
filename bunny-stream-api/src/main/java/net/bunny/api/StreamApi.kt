@@ -42,4 +42,11 @@ interface StreamApi {
     val progressRepository: ProgressRepository
 
     suspend fun fetchPlayerSettings(libraryId: Long, videoId: String): Either<String, PlayerSettings>
+
+    suspend fun fetchPlayerSettingsWithToken(
+        libraryId: Long,
+        videoId: String,
+        token: String,
+        expires: Long,
+    ): Either<String, PlayerSettings>
 }

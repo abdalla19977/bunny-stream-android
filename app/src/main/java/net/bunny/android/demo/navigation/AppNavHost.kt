@@ -43,7 +43,9 @@ fun AppNavHost(
             navigateToSettings = navController::navigateToSettings,
             navigateToVideoList = navController::navigateToLibrary,
             navigateToUpload = { navController.navigateToLibrary(showUpload = true) },
-            navigateToPlayer = navController::navigateToPlayer,
+            navigateToPlayer = { videoId, libraryId, token ->
+                navController.navigateToPlayer(videoId, libraryId,  token)
+            },
             navigateToStreaming = {
                 context.startActivity(Intent(context, RecordingActivity::class.java))
             },
