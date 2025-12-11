@@ -4,9 +4,25 @@ plugins {
     id("kotlin-parcelize")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+    id("maven-publish")
 }
 
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.abdalla19977"
+            artifactId = "bunny-stream-player"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+}
 android {
+    publishing {
+        singleVariant("release")
+    }
     namespace = "net.bunny.player"
     compileSdk = 35
 
