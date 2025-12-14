@@ -58,8 +58,6 @@ data class TVMenuItem(
 fun NavGraphBuilder.tvHomeScreen(
     appState: AppState,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
     navigateToTVPlayer: (String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
@@ -73,8 +71,6 @@ fun NavGraphBuilder.tvHomeScreen(
             appState = appState,
             localPrefs = App.di.localPrefs,
             navigateToSettings = navigateToSettings,
-            navigateToVideoList = navigateToVideoList,
-            navigateToUpload = navigateToUpload,
             navigateToStreaming = navigateToStreaming,
             navigateToTVPlayer = navigateToTVPlayer,
             navigateToResumeSettings = navigateToResumeSettings,
@@ -89,8 +85,6 @@ fun TVHomeScreenRoute(
     appState: AppState,
     localPrefs: LocalPrefs,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
     navigateToTVPlayer: (String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
@@ -101,16 +95,6 @@ fun TVHomeScreenRoute(
 
     val menuItems = remember {
         listOf(
-            TVMenuItem(
-                title = "Video Library",
-                description = "Browse and play your videos",
-                icon = Icons.Default.Menu // Corresponds to user's "VideoLibrary"
-            ) { navigateToVideoList() },
-            TVMenuItem(
-                title = "Upload Video",
-                description = "Upload new videos to your library",
-                icon = Icons.Default.KeyboardArrowUp // Corresponds to user's "CloudUpload"
-            ) { navigateToUpload() },
             TVMenuItem(
                 title = "Live Recording",
                 description = "Record and stream live content",

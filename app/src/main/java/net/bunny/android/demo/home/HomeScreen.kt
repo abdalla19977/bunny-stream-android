@@ -50,11 +50,7 @@ sealed class HomeOption(
     val title: String,
     val textColor: @Composable () -> Color = { MaterialTheme.colorScheme.onSurface }
 ) {
-    object VideoPlayer : HomeOption("Video player")
 
-    object VideoUpload : HomeOption("Video Upload")
-
-    object CameraUpload : HomeOption("Camera upload")
 
     object DirectVideoPlay : HomeOption(
         "Direct video play",
@@ -82,8 +78,6 @@ fun HomeScreenRoute(
     appState: AppState,
     localPrefs: LocalPrefs,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
     navigateToPlayer: (String, Long, String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
@@ -96,17 +90,6 @@ fun HomeScreenRoute(
         showDialog,
         onOptionClick = { option ->
             when (option) {
-                HomeOption.VideoPlayer -> {
-                    navigateToVideoList()
-                }
-
-                HomeOption.VideoUpload -> {
-                    navigateToUpload()
-                }
-
-                HomeOption.CameraUpload -> {
-                    navigateToStreaming()
-                }
 
                 HomeOption.DirectVideoPlay -> {
                     showDialog = true
@@ -127,7 +110,7 @@ fun HomeScreenRoute(
         },
         onPlayDirect = { videoId, libraryId, token, expires ->
             showDialog = false
-            navigateToPlayer(videoId, libraryId.toLong(), token, expires)
+            navigateToPlayer(videoId, libraryId, token, expires)
         },
         onDismiss = {
             showDialog = false
@@ -189,9 +172,6 @@ fun OptionsList(
     modifier: Modifier
 ) {
     val actionItems = listOf(
-        HomeOption.VideoPlayer,
-        HomeOption.VideoUpload,
-        HomeOption.CameraUpload,
         HomeOption.DirectVideoPlay
     )
 

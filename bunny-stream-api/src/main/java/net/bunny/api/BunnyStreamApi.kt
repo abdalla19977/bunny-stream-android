@@ -9,9 +9,6 @@ import net.bunny.api.ktor.initHttpClient
 import net.bunny.api.progress.DefaultProgressRepository
 import net.bunny.api.settings.data.DefaultSettingsRepository
 import net.bunny.api.settings.domain.model.PlayerSettings
-import net.bunny.api.upload.DefaultVideoUploader
-import net.bunny.api.upload.service.basic.BasicUploaderService
-import net.bunny.api.upload.service.tus.TusUploaderService
 import org.openapitools.client.infrastructure.ApiClient
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -86,39 +83,9 @@ class BunnyStreamApi private constructor(
 
     private val ktorClient = initHttpClient(accessKey)
 
-    private val basicUploaderService = BasicUploaderService(
-        ktorClient,
-        Dispatchers.IO
-    )
     override val progressRepository = DefaultProgressRepository(
         httpClient = ktorClient,
         coroutineDispatcher = Dispatchers.IO
-    )
-    private val tusVideoUploaderService = TusUploaderService(
-        preferences = prefs,
-        chunkSize = 1024,
-        accessKey = accessKey ?: run {
-            /**
-             * AccessKey is required for TusUploaderService, if not provided fallback to
-             * BasicUploaderService which will be used instead.
-             */
-            throw IllegalStateException("AccessKey must be provided for TusUploaderService")
-        },
-        dispatcher = Dispatchers.IO
-    )
-
-    override val videoUploader = DefaultVideoUploader(
-        context = context,
-        videoUploadService = basicUploaderService,
-        ioDispatcher = Dispatchers.IO,
-        videosApi
-    )
-
-    override val tusVideoUploader = DefaultVideoUploader(
-        context = context,
-        videoUploadService = tusVideoUploaderService,
-        ioDispatcher = Dispatchers.IO,
-        videosApi
     )
 
     override val settingsRepository = DefaultSettingsRepository(

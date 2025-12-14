@@ -20,8 +20,6 @@ fun NavController.navigateToHome(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.homeScreen(
     appState: AppState,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
     navigateToResumeSettings: () -> Unit,
     navigateToResumeManagement: () -> Unit,
@@ -35,8 +33,6 @@ fun NavGraphBuilder.homeScreen(
             appState = appState,
             localPrefs = App.di.localPrefs,
             navigateToSettings = navigateToSettings,
-            navigateToVideoList = navigateToVideoList,
-            navigateToUpload = navigateToUpload,
             navigateToStreaming = navigateToStreaming,
             navigateToPlayer = navigateToPlayer,
             navigateToResumeSettings = navigateToResumeSettings,

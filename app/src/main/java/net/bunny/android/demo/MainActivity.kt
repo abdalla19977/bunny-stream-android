@@ -22,8 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import net.bunny.android.demo.home.HOME_ROUTE
-import net.bunny.android.demo.library.libraryScreen
-import net.bunny.android.demo.library.navigateToLibrary
 import net.bunny.android.demo.navigation.navigateToResumeManagement
 import net.bunny.android.demo.navigation.navigateToResumeSettings
 import net.bunny.android.demo.navigation.resumePositionManagementScreen
@@ -127,8 +125,6 @@ class MainActivity : AppCompatActivity() {
             tvHomeScreen(
                 appState = appState,
                 navigateToSettings = navController::navigateToSettings,
-                navigateToVideoList = navController::navigateToLibrary,
-                navigateToUpload = { navController.navigateToLibrary(showUpload = true) },
                 navigateToTVPlayer = { videoId, libraryId ->
                     // Use TV player directly
                     BunnyTVPlayerActivity.start(
@@ -145,19 +141,7 @@ class MainActivity : AppCompatActivity() {
                 modifier = modifier
             )
 
-            // Keep existing screens but with TV navigation
-            libraryScreen(
-                appState = appState,
-                navigateToSettings = navController::navigateToSettings,
-                navigateToPlayer = { videoId ->
-                    // Use TV player for videos
-                    BunnyTVPlayerActivity.start(
-                        context = context,
-                        videoId = videoId,
-                        libraryId = App.di.localPrefs.libraryId
-                    )
-                },
-            )
+
             settingsScreen(appState = appState)
             resumePositionSettingsScreen(appState = appState)
             resumePositionManagementScreen(

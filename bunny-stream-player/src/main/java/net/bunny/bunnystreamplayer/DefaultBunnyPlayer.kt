@@ -80,9 +80,7 @@ class DefaultBunnyPlayer private constructor(private val appContext: Context) : 
             instance ?: synchronized(this) {
                 instance ?: DefaultBunnyPlayer(context.applicationContext).also { instance = it }
             }
-        fun isRunningOnTV(context: Context): Boolean {
-            return context.packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-        }
+
     }
 
     // Override the context property from BunnyPlayer interface
