@@ -85,7 +85,7 @@ fun HomeScreenRoute(
     navigateToVideoList: () -> Unit,
     navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
-    navigateToPlayer: (String, Long, String) -> Unit,
+    navigateToPlayer: (String, Long, String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
     navigateToResumeManagement: () -> Unit,
     modifier: Modifier = Modifier,
@@ -125,9 +125,9 @@ fun HomeScreenRoute(
                 }
             }
         },
-        onPlayDirect = { videoId, libraryId, token ->
+        onPlayDirect = { videoId, libraryId, token, expires ->
             showDialog = false
-            navigateToPlayer(videoId, libraryId.toLong(), token)
+            navigateToPlayer(videoId, libraryId.toLong(), token, expires)
         },
         onDismiss = {
             showDialog = false
@@ -141,7 +141,7 @@ fun HomeScreenContent(
     modifier: Modifier,
     showDialog: Boolean = false,
     onOptionClick: (HomeOption) -> Unit,
-    onPlayDirect: (String, String, String) -> Unit,
+    onPlayDirect: (String, Long, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     Scaffold(
@@ -167,8 +167,13 @@ fun HomeScreenContent(
         if (showDialog) {
             EnterVideoIdDialog(
                 initialValue = "",
-                onPlay = { videoId, libraryId, token ->
-                    onPlayDirect(videoId, libraryId, token)     // fire the navigation/callback
+                onPlay = { videoId, libraryId, token, expires ->
+                    onPlayDirect(
+                        videoId,
+                        libraryId,
+                        token,
+                        expires
+                    )     // fire the navigation/callback
                 },
                 onDismiss = {
                     onDismiss()
@@ -288,12 +293,13 @@ fun OptionsCategory(title: String) {
 @Composable
 private fun EnterVideoIdDialog(
     initialValue: String = "",
-    onPlay: (String, String, String) -> Unit,
+    onPlay: (String, Long, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     var videoId by remember { mutableStateOf(initialValue) }
     var libraryId by remember { mutableStateOf(initialValue) }
     var token by remember { mutableStateOf(initialValue) }
+    var expires by remember { mutableStateOf(0L) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -351,7 +357,7 @@ private fun EnterVideoIdDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = { onPlay(videoId, libraryId, token) }
+                onClick = { onPlay(videoId, libraryId.toLongOrNull() ?: 0L, token, expires) }
             ) {
                 Text("Play", color = MaterialTheme.colorScheme.primary)
             }
@@ -374,7 +380,7 @@ fun OptionsScreenPreview() {
         HomeScreenContent(
             modifier = Modifier.fillMaxSize(),
             onOptionClick = {},
-            onPlayDirect = { videoId, libraryId, token ->
+            onPlayDirect = { videoId, libraryId, token, expires ->
             },
             onDismiss = { },
         )

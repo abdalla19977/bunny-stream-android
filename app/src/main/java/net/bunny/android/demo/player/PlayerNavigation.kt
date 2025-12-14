@@ -83,13 +83,10 @@ fun NavGraphBuilder.playerScreen(appState: AppState) {
             }
         )
     ) { backStack ->
-        val videoId = backStack.arguments!!.getString(VIDEO_ID)!!
-        val rawLibId = backStack.arguments!!.getLong(LIBRARY_ID)
-        val libraryId = rawLibId.takeIf { it != -1L }  // convert sentinel → null
-        val token =
-            backStack.arguments?.getString(TOKEN)?.takeIf { it.isNotEmpty() } ?: throw Exception()
-        val rawExpires = backStack.arguments?.getLong(EXPIRES) ?: throw Exception()
-        val expires = rawExpires.takeIf { it != -1L } ?: throw Exception()
+        val videoId = "2faa7ca3-4611-4944-b088-5a2d188a5bbd"
+        val libraryId = 523274.toLong()
+        val token = "52ed6ad660eac0506d7ef42c628b0a641d272c7f211d7f6f01db6528bcd3df30"
+        val expires = 1768378183.toLong()
         PlayerRoute(appState, videoId, libraryId, token, expires)
     }
 }
