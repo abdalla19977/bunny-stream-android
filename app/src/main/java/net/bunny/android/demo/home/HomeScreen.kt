@@ -50,11 +50,7 @@ sealed class HomeOption(
     val title: String,
     val textColor: @Composable () -> Color = { MaterialTheme.colorScheme.onSurface }
 ) {
-    object VideoPlayer : HomeOption("Video player")
 
-    object VideoUpload : HomeOption("Video Upload")
-
-    object CameraUpload : HomeOption("Camera upload")
 
     object DirectVideoPlay : HomeOption(
         "Direct video play",
@@ -82,10 +78,8 @@ fun HomeScreenRoute(
     appState: AppState,
     localPrefs: LocalPrefs,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
-    navigateToPlayer: (String, Long) -> Unit,
+    navigateToPlayer: (String, Long, String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
     navigateToResumeManagement: () -> Unit,
     modifier: Modifier = Modifier,
@@ -96,17 +90,6 @@ fun HomeScreenRoute(
         showDialog,
         onOptionClick = { option ->
             when (option) {
-                HomeOption.VideoPlayer -> {
-                    navigateToVideoList()
-                }
-
-                HomeOption.VideoUpload -> {
-                    navigateToUpload()
-                }
-
-                HomeOption.CameraUpload -> {
-                    navigateToStreaming()
-                }
 
                 HomeOption.DirectVideoPlay -> {
                     showDialog = true
@@ -125,9 +108,9 @@ fun HomeScreenRoute(
                 }
             }
         },
-        onPlayDirect = { videoId, libraryId ->
+        onPlayDirect = { videoId, libraryId, token, expires ->
             showDialog = false
-            navigateToPlayer(videoId, libraryId.toLong())
+            navigateToPlayer(videoId, libraryId, token, expires)
         },
         onDismiss = {
             showDialog = false
@@ -141,7 +124,7 @@ fun HomeScreenContent(
     modifier: Modifier,
     showDialog: Boolean = false,
     onOptionClick: (HomeOption) -> Unit,
-    onPlayDirect: (String, String) -> Unit,
+    onPlayDirect: (String, Long, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     Scaffold(
@@ -167,8 +150,13 @@ fun HomeScreenContent(
         if (showDialog) {
             EnterVideoIdDialog(
                 initialValue = "",
-                onPlay = { videoId, libraryId ->
-                    onPlayDirect(videoId, libraryId)     // fire the navigation/callback
+                onPlay = { videoId, libraryId, token, expires ->
+                    onPlayDirect(
+                        videoId,
+                        libraryId,
+                        token,
+                        expires
+                    )     // fire the navigation/callback
                 },
                 onDismiss = {
                     onDismiss()
@@ -177,15 +165,13 @@ fun HomeScreenContent(
         }
     }
 }
+
 @Composable
 fun OptionsList(
     onOptionClick: (HomeOption) -> Unit,
     modifier: Modifier
 ) {
     val actionItems = listOf(
-        HomeOption.VideoPlayer,
-        HomeOption.VideoUpload,
-        HomeOption.CameraUpload,
         HomeOption.DirectVideoPlay
     )
 
@@ -287,11 +273,13 @@ fun OptionsCategory(title: String) {
 @Composable
 private fun EnterVideoIdDialog(
     initialValue: String = "",
-    onPlay: (String, String) -> Unit,
+    onPlay: (String, Long, String, Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     var videoId by remember { mutableStateOf(initialValue) }
     var libraryId by remember { mutableStateOf(initialValue) }
+    var token by remember { mutableStateOf(initialValue) }
+    var expires by remember { mutableStateOf(0L) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -331,11 +319,25 @@ private fun EnterVideoIdDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Please enter the Token  of the video you want to play",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = token,
+                    onValueChange = { token = it },
+                    placeholder = { Text("Video Token") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onPlay(videoId, libraryId) }
+                onClick = { onPlay(videoId, libraryId.toLongOrNull() ?: 0L, token, expires) }
             ) {
                 Text("Play", color = MaterialTheme.colorScheme.primary)
             }
@@ -358,7 +360,7 @@ fun OptionsScreenPreview() {
         HomeScreenContent(
             modifier = Modifier.fillMaxSize(),
             onOptionClick = {},
-            onPlayDirect = { videoId, libraryId ->
+            onPlayDirect = { videoId, libraryId, token, expires ->
             },
             onDismiss = { },
         )

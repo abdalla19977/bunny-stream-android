@@ -4,6 +4,7 @@ import arrow.core.Either
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -23,6 +24,35 @@ class DefaultSettingsRepository(
 
         return@withContext try {
             val response = httpClient.get(endpoint)
+            when (response.status.value) {
+                HttpStatusCode.OK.value -> {
+                    val result: PlayerSettingsResponse = response.body()
+                    Either.Right(result.toModel())
+                }
+                HttpStatusCode.Unauthorized.value -> Either.Left("Authorization required Unauthorized")
+                HttpStatusCode.Forbidden.value -> Either.Left("Forbidden")
+                HttpStatusCode.NotFound.value -> Either.Left("Not Found")
+                else -> Either.Left("Error: ${response.status.value}")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Either.Left("Unknown exception: ${e.message}")
+        }
+    }
+
+    override suspend fun fetchSettingsWithToken(
+        libraryId: Long,
+        videoId: String,
+        token: String,
+        expires: Long
+    ): Either<String, PlayerSettings> = withContext(coroutineDispatcher) {
+        val endpoint = "${BunnyStreamApi.baseApi}/library/$libraryId/videos/$videoId/play"
+
+        return@withContext try {
+            val response = httpClient.get(endpoint) {
+                parameter("token", "52ed6ad660eac0506d7ef42c628b0a641d272c7f211d7f6f01db6528bcd3df30")
+                parameter("expires", 1768378183)
+            }
             when (response.status.value) {
                 HttpStatusCode.OK.value -> {
                     val result: PlayerSettingsResponse = response.body()

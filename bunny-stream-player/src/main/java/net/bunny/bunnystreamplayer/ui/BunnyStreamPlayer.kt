@@ -71,6 +71,7 @@ class BunnyStreamPlayer @JvmOverloads constructor(
     private var currentVideoId: String? = null
     private var currentLibraryId: Long? = null
     private var resumeConfig: ResumeConfig = ResumeConfig()
+
     /**
      * Check if the app is running on Android TV
      */
@@ -89,25 +90,36 @@ class BunnyStreamPlayer @JvmOverloads constructor(
         }
     }
 
-    /**
-     * Play video with automatic TV/Mobile detection
-     */
-    fun playVideoWithTVDetection(videoId: String, libraryId: Long?) {
-        if (isRunningOnTV()) {
-            // Launch TV player - need to import from the tv module
-            try {
-                val tvPlayerClass = Class.forName("net.bunny.tv.ui.BunnyTVPlayerActivity")
-                val startMethod = tvPlayerClass.getMethod("start", Context::class.java, String::class.java, Long::class.java, String::class.java)
-                startMethod.invoke(null, context, videoId, libraryId ?: -1L, null)
-            } catch (e: Exception) {
-                Log.w(TAG, "TV player not available, falling back to mobile player", e)
-                playVideo(videoId, libraryId, videoTitle = "") //TODO: must be change to real video title
-            }
-        } else {
-            // Use regular mobile player
-            playVideo(videoId, libraryId, videoTitle = "") //TODO: must be change to real video title
-        }
-    }
+//    /**
+//     * Play video with automatic TV/Mobile detection
+//     */
+//    fun playVideoWithTVDetection(videoId: String, libraryId: Long?) {
+//        if (isRunningOnTV()) {
+//            // Launch TV player - need to import from the tv module
+//            try {
+//                val tvPlayerClass = Class.forName("net.bunny.tv.ui.BunnyTVPlayerActivity")
+//                val startMethod = tvPlayerClass.getMethod(
+//                    "start",
+//                    Context::class.java,
+//                    String::class.java,
+//                    Long::class.java,
+//                    String::class.java
+//                )
+//                startMethod.invoke(null, context, videoId, libraryId ?: -1L, null)
+//            } catch (e: Exception) {
+//                Log.w(TAG, "TV player not available, falling back to mobile player", e)
+//                playVideo(
+//                    videoId, libraryId, videoTitle = "", token = token
+//                ) //TODO: must be change to real video title
+//            }
+//        } else {
+//            // Use regular mobile player
+//            playVideo(
+//                videoId, libraryId, videoTitle = ""
+//            ) //TODO: must be change to real video title
+//        }
+//    }
+
     private val resumePositionListener = object : ResumePositionListener {
         override fun onResumePositionAvailable(videoId: String, position: PlaybackPosition) {
             Log.d(TAG, "Resume position available: $position")
@@ -280,12 +292,92 @@ class BunnyStreamPlayer @JvmOverloads constructor(
         }
     }
 
-    override fun playVideo(videoId: String, libraryId: Long?, videoTitle: String) {
-        Log.d(TAG, "playVideo videoId=$videoId")
+//    override fun playVideo(
+//        videoId: String, libraryId: Long?, videoTitle: String, token: String, expires: Long
+//    ) {
+//        Log.d(TAG, "playVideo videoId=$videoId")
+//
+//        currentVideoId = videoId
+//        currentLibraryId = libraryId
+//        val providedLibraryId = libraryId ?: BunnyStreamApi.libraryId
+//
+//        if (!BunnyStreamApi.isInitialized()) {
+//            Log.e(
+//                TAG,
+//                "Unable to play video, initialize the player first using BunnyStreamSdk.initialize"
+//            )
+//            return
+//        }
+//
+//        // Save previous video position before switching
+//        saveCurrentPosition()
+//
+//        loadVideoJob?.cancel()
+//
+//        pendingJob = {
+//            scope!!.launch {
+//
+//                val video: VideoModel
+//
+//                try {
+//                    video = withContext(Dispatchers.IO) {
+//                        BunnyStreamApi.getInstance().videosApi.videoGetVideoPlayData(
+//                            providedLibraryId, videoId
+//                        ).video?.toVideoModel()!!
+//                    }
+//                    Log.d(TAG, "video=$video")
+//                } catch (e: Exception) {
+//                    Log.w(TAG, "Error fetching video: $e")
+//                    return@launch
+//                }
+//
+//                val settings =
+//                    BunnyStreamApi.getInstance().fetchPlayerSettings(providedLibraryId, videoId)
+//
+//                settings.fold(ifLeft = {
+//                    initializeVideo(
+//                        video, PlayerSettings(
+//                            thumbnailUrl = "",
+//                            controls = "",
+//                            keyColor = 0,
+//                            captionsFontSize = 0,
+//                            captionsFontColor = null,
+//                            captionsBackgroundColor = null,
+//                            uiLanguage = "",
+//                            showHeatmap = false,
+//                            fontFamily = "",
+//                            playbackSpeeds = listOf(
+//                                0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f, 3.0f, 4.0f
+//                            ),
+//                            drmEnabled = false,
+//                            vastTagUrl = null,
+//                            videoUrl = "",
+//                            seekPath = "",
+//                            captionsPath = ""
+//                        )
+//                    )
+//                    playerView.showError(it)
+//                }, ifRight = { initializeVideo(video, it) })
+//            }
+//        }
+//
+//        if (scope == null) {
+//            Log.d(TAG, "scope not created yet")
+//            return
+//        }
+//
+//        loadVideoJob = pendingJob?.invoke()
+//        pendingJob = null
+//    }
+
+    override fun playVideoWithToken(videoId: String, libraryId: Long?, videoTitle: String, token: String, expires: Long) {
+
+        Log.d(TAG, "playVideoWithToken videoId=$videoId, token=$token, expires=$expires")
 
         currentVideoId = videoId
         currentLibraryId = libraryId
         val providedLibraryId = libraryId ?: BunnyStreamApi.libraryId
+
 
         if (!BunnyStreamApi.isInitialized()) {
             Log.e(
@@ -302,24 +394,27 @@ class BunnyStreamPlayer @JvmOverloads constructor(
 
         pendingJob = {
             scope!!.launch {
-
-                val video: VideoModel
+                var video: VideoModel? = null
+                var settings: arrow.core.Either<String, PlayerSettings>? = null
 
                 try {
                     video = withContext(Dispatchers.IO) {
                         BunnyStreamApi.getInstance().videosApi.videoGetVideoPlayData(
                             providedLibraryId,
-                            videoId
+                            videoId,
+                            token = token,
+                            expires = expires
                         ).video?.toVideoModel()!!
                     }
-                    Log.d(TAG, "video=$video")
+                    settings = BunnyStreamApi.getInstance()
+                        .fetchPlayerSettingsWithToken(providedLibraryId, videoId, token, expires)
                 } catch (e: Exception) {
-                    Log.w(TAG, "Error fetching video: $e")
-                    return@launch
+                    Log.w(TAG, "Error fetching video/settings: $e")
                 }
 
-                val settings = BunnyStreamApi.getInstance()
-                    .fetchPlayerSettings(providedLibraryId, videoId)
+                if (video == null || settings == null) {
+                    return@launch
+                }
 
                 settings.fold(
                     ifLeft = {
@@ -402,8 +497,7 @@ class BunnyStreamPlayer @JvmOverloads constructor(
             try {
                 val retentionDataResponse = withContext(Dispatchers.IO) {
                     BunnyStreamApi.getInstance().videosApi.videoGetVideoHeatmap(
-                        video.videoLibraryId!!,
-                        video.guid!!
+                        video.videoLibraryId!!, video.guid!!
                     )
                 }
                 retentionData = retentionDataResponse.getSanitizedRetentionData()
@@ -439,7 +533,9 @@ class BunnyStreamPlayer @JvmOverloads constructor(
 
                         currentVideoId?.let { videoId ->
                             if (position > 0 && duration > 0) {
-                                bunnyPlayer.positionManager?.savePosition(videoId, position, duration)
+                                bunnyPlayer.positionManager?.savePosition(
+                                    videoId, position, duration
+                                )
                             }
                         }
                     }
@@ -480,6 +576,7 @@ class BunnyStreamPlayer @JvmOverloads constructor(
             }
         }
     }
+
     private fun formatTime(millis: Long): String {
         val totalSeconds = millis / 1000
         val hours = totalSeconds / 3600

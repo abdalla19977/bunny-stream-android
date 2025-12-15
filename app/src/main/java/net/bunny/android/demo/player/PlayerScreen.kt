@@ -66,6 +66,8 @@ fun PlayerRoute(
     appState: AppState,
     videoId: String,
     libraryId: Long?,
+    token: String,
+    expires: Long,
     modifier: Modifier = Modifier,
     viewModel: PlayerViewModel = viewModel(),
 ) {
@@ -75,6 +77,8 @@ fun PlayerRoute(
         modifier = modifier,
         videoId = videoId,
         libraryId = libraryId,
+        token = token,
+        expires = expires,
         uiState,
         onBackClicked = { appState.navController.popBackStack() },
     )
@@ -88,6 +92,8 @@ fun PlayerScreen(
     modifier: Modifier = Modifier,
     videoId: String,
     libraryId: Long?,
+    token: String,
+    expires: Long,
     uiState: VideoUiState,
     onBackClicked: () -> Unit,
 ) {
@@ -130,6 +136,8 @@ fun PlayerScreen(
             BunnyPlayerComposable(
                 videoId = videoId,
                 libraryId = libraryId,
+                token = token,
+                expires = expires,
                 resumePosition = when (uiState) {
                     is VideoUiState.VideoUiLoaded -> uiState.resumePosition
                     else -> 0L
@@ -379,6 +387,8 @@ private fun SpeedButtonRow(
 fun BunnyPlayerComposable(
     videoId: String,
     libraryId: Long?,
+    token: String,
+    expires: Long,
     resumePosition: Long = 0L,
     onPlayerReady: (BunnyStreamPlayer) -> Unit = {},
     onResumePosition: ((PlaybackPosition, (Boolean) -> Unit) -> Unit)? = null,
@@ -429,7 +439,8 @@ fun BunnyPlayerComposable(
                 player
             },
             update = {
-                it.playVideo(videoId, libraryId, videoTitle = "")
+                it.playVideoWithToken(
+                    videoId, libraryId, videoTitle = "", token, expires)
                 onPlayerReady(it)
             },
             modifier = modifier.background(Color.Gray)
@@ -515,6 +526,8 @@ private fun PlayerScreenPreview() {
                 )
             ),
             onBackClicked = {},
+            token = "",
+            expires = 123,
         )
     }
 }

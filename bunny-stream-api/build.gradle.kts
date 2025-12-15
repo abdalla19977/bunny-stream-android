@@ -8,9 +8,25 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+    id("maven-publish")
+}
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.abdalla19977"
+            artifactId = "bunny-stream-api"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
 }
 
 android {
+    publishing {
+        singleVariant("release")
+    }
     buildFeatures {
         buildConfig = true
     }
@@ -23,7 +39,11 @@ android {
     defaultConfig {
         minSdk = 26
 
-        buildConfigField("String", "TUS_UPLOAD_ENDPOINT", "\"https://video.bunnycdn.com/tusupload\"")
+        buildConfigField(
+            "String",
+            "TUS_UPLOAD_ENDPOINT",
+            "\"https://video.bunnycdn.com/tusupload\""
+        )
         buildConfigField("String", "BASE_API", "\"https://video.bunnycdn.com\"")
         buildConfigField("String", "RTMP_ENDPOINT", "\"rtmp://49.13.154.169/ingest\"")
 
@@ -131,7 +151,10 @@ val specs = File("${project.projectDir}/openapi").walk().map {
 }.toMap().filter { it.key != "openapi" }
 
 specs.forEach {
-    tasks.create("openApiGenerate-${it.key}", org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class) {
+    tasks.create(
+        "openApiGenerate-${it.key}",
+        org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class
+    ) {
         generatorName.set("kotlin")
         inputSpec.set(it.value)
         outputDir.set(layout.buildDirectory.dir("generated/api").get().asFile.absolutePath)
@@ -139,19 +162,25 @@ specs.forEach {
         generateApiTests.set(false)
         generateModelTests.set(false)
 
-        additionalProperties.set(mapOf(
-            "kotlinEnums" to "true",
-            "useEnumExtension" to "true"
-        ))
+        additionalProperties.set(
+            mapOf(
+                "kotlinEnums" to "true",
+                "useEnumExtension" to "true"
+            )
+        )
 
-        configOptions.set(mapOf(
-            "dateLibrary" to "string",
-            "serializationLibrary" to "gson",
-        ))
+        configOptions.set(
+            mapOf(
+                "dateLibrary" to "string",
+                "serializationLibrary" to "gson",
+            )
+        )
 
-        typeMappings.set(mapOf(
-            "VideoModelStatus" to "net.bunny.api.model.VideoModelStatus"
-        ))
+        typeMappings.set(
+            mapOf(
+                "VideoModelStatus" to "net.bunny.api.model.VideoModelStatus"
+            )
+        )
     }
 }
 
@@ -187,7 +216,11 @@ tasks.register<Copy>("copyGeneratedDocs") {
 // Correct implementation is supplied from net.bunny.api.model.VideoModelStatus.
 tasks.register("fixGeneratedFiles") {
     doLast {
-        val fileToFix = file("${layout.buildDirectory.dir("generated/api/").get().asFile.absolutePath}/src/main/kotlin/org/openapitools/client/models/VideoModelStatus.kt")
+        val fileToFix = file(
+            "${
+                layout.buildDirectory.dir("generated/api/").get().asFile.absolutePath
+            }/src/main/kotlin/org/openapitools/client/models/VideoModelStatus.kt"
+        )
         if (fileToFix.exists()) {
             try {
                 // Empty placeholder class that matches the package of the original file

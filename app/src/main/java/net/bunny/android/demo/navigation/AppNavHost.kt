@@ -13,8 +13,6 @@ import net.bunny.android.demo.App
 import net.bunny.android.demo.home.HOME_ROUTE
 import net.bunny.android.demo.home.TVHomeScreenRoute
 import net.bunny.android.demo.home.homeScreen
-import net.bunny.android.demo.library.libraryScreen
-import net.bunny.android.demo.library.navigateToLibrary
 import net.bunny.android.demo.player.navigateToPlayer
 import net.bunny.android.demo.player.playerScreen
 import net.bunny.android.demo.recording.RecordingActivity
@@ -41,9 +39,9 @@ fun AppNavHost(
         homeScreen(
             appState = appState,
             navigateToSettings = navController::navigateToSettings,
-            navigateToVideoList = navController::navigateToLibrary,
-            navigateToUpload = { navController.navigateToLibrary(showUpload = true) },
-            navigateToPlayer = navController::navigateToPlayer,
+            navigateToPlayer = { videoId, libraryId, token, expires ->
+                navController.navigateToPlayer(videoId, libraryId, token, token, expires)
+            },
             navigateToStreaming = {
                 context.startActivity(Intent(context, RecordingActivity::class.java))
             },
@@ -51,11 +49,7 @@ fun AppNavHost(
             navigateToResumeManagement = navController::navigateToResumeManagement,
             modifier = modifier
         )
-        libraryScreen(
-            appState = appState,
-            navigateToSettings = navController::navigateToSettings,
-            navigateToPlayer = { navController.navigateToPlayer(it, null) },
-        )
+
         settingsScreen(appState = appState)
         playerScreen(appState = appState)
         resumePositionSettingsScreen(appState = appState)
@@ -69,8 +63,6 @@ fun AppNavHost(
 fun NavGraphBuilder.tvHomeScreen(
     appState: AppState,
     navigateToSettings: () -> Unit,
-    navigateToVideoList: () -> Unit,
-    navigateToUpload: () -> Unit,
     navigateToStreaming: () -> Unit,
     navigateToTVPlayer: (String, Long) -> Unit,
     navigateToResumeSettings: () -> Unit,
@@ -84,8 +76,6 @@ fun NavGraphBuilder.tvHomeScreen(
             appState = appState,
             localPrefs = App.di.localPrefs,
             navigateToSettings = navigateToSettings,
-            navigateToVideoList = navigateToVideoList,
-            navigateToUpload = navigateToUpload,
             navigateToStreaming = navigateToStreaming,
             navigateToTVPlayer = navigateToTVPlayer,
             navigateToResumeSettings = navigateToResumeSettings,
