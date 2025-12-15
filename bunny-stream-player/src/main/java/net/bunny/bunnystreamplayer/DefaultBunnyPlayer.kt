@@ -492,8 +492,11 @@ class DefaultBunnyPlayer private constructor(private val appContext: Context) : 
         } ?: emptyList()
 
         // Build MediaItem with DRM config (CENC)
+        // Include token and expires for authentication (similar to iOS FairPlay)
+        val tokenParam = BunnyStreamApi.drmToken?.let { "&token=$it" } ?: ""
+        val expiresParam = BunnyStreamApi.drmExpires?.let { "&expires=$it" } ?: ""
         val drmLicenseUri = "${BunnyStreamApi.baseApi}/WidevineLicense/" +
-                "${video.videoLibraryId}/${video.guid}?contentId=${video.guid}"
+                "${video.videoLibraryId}/${video.guid}?contentId=${video.guid}$tokenParam$expiresParam"
 
         val mediaItemBuilder = MediaItem.Builder()
             .setUri(playerSettings.videoUrl)

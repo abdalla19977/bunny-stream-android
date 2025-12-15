@@ -29,16 +29,25 @@ class BunnyStreamApi private constructor(
         var libraryId: Long = -1
             private set
 
+        // Store token and expires for DRM license requests
+        var drmToken: String? = null
+            private set
+        
+        var drmExpires: Long? = null
+            private set
+
         @Volatile
         private var instance: StreamApi? = null
 
-        fun initialize(context: Context, accessKey: String?, libraryId: Long) {
+        fun initialize(context: Context, accessKey: String?, libraryId: Long, token: String? = null, expires: Long? = null) {
             instance = BunnyStreamApi(
                 context.applicationContext,
                 accessKey,
             )
 
             this.libraryId = libraryId
+            this.drmToken = token
+            this.drmExpires = expires
             accessKey?.let {
                 ApiClient.apiKey["AccessKey"] = it
             }

@@ -4,6 +4,7 @@ import arrow.core.Either
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.CoroutineDispatcher
@@ -50,8 +51,9 @@ class DefaultSettingsRepository(
 
         return@withContext try {
             val response = httpClient.get(endpoint) {
-                parameter("token", "52ed6ad660eac0506d7ef42c628b0a641d272c7f211d7f6f01db6528bcd3df30")
-                parameter("expires", 1768378183)
+                parameter("token", token)
+                parameter("expires", expires)
+                header("Referer", "https://iframe.mediadelivery.net/")
             }
             when (response.status.value) {
                 HttpStatusCode.OK.value -> {
